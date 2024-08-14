@@ -1,30 +1,24 @@
-# React + TypeScript + Vite
+## Hi 👋
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Hi! I'm **Pavan Chowdri M** and I have build a e-commerce website using MERN stack. excited to share my work.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Install Dependencies
+----
+npm i axios react-chartjs-2 react-hot-toast react-redux react-icons react-router-dom react-table sass firebase moment 
+and also add it's types as well.
 
-## Expanding the ESLint configuration
+### ENV file
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+VITE_FIREBASE_KEY =   ![Screenshot (341)](https://github.com/user-attachments/assets/ca4dd80d-fec5-4e7c-9e2c-93b4335dca9f)
 
-- Configure the top-level `parserOptions` property like this:
+VITE_AUTH_DOMAIN =
+VITE_PROJECT_ID = 
+VITE_STORAGE_BUCKET = 
+VITE_MESSAGING_SENDER_ID =
+VITE_APP_ID = 
+VITE_SERVER=
+VITE_STRIPE_KEY=
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json', './tsconfig.app.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Snapshots
