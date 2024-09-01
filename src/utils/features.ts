@@ -52,3 +52,14 @@ export const getLastMonths = () => {
     lastTweleveMonths,
   };
 };
+
+export const transformImage = (url?: string, width = 200) => {
+  if (!url) {
+    console.warn("transformImage was called with an undefined or null url");
+    return ''; // or a placeholder image URL
+  }
+  const newUrl = url.replace("upload/", `upload/dpr_auto/w_${width}/`);
+  console.log("Transformed image URL:", newUrl); // Debugging
+  return newUrl;
+};
+

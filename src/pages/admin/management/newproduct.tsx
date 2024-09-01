@@ -1,52 +1,43 @@
-import { ChangeEvent, useState } from "react";
+import { useFileHandler } from "6pp";
+import { useState } from "react";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
 import { useSelector } from "react-redux";
 import { UserReducerInitialState } from "../../../types/reducer-types";
 import { useNewProductMutation } from "../../../redux/api/productAPI";
 import { responseToast } from "../../../utils/features";
 import { useNavigate } from "react-router-dom";
+
 const NewProduct = () => {
   const { user } = useSelector(
     (state: { userReducer: UserReducerInitialState }) => state.userReducer
   );
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [price, setPrice] = useState<number>(1000);
   const [stock, setStock] = useState<number>(1);
-  const [photoPrev, setPhotoPrev] = useState<string>("");
-  const [photo, setPhoto] = useState<File>();
 
   const [newProduct] = useNewProductMutation();
   const navigate = useNavigate();
 
-  const changeImageHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const file: File | undefined = e.target.files?.[0];
-
-    const reader: FileReader = new FileReader();
-
-    if (file) {
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          setPhotoPrev(reader.result);
-          setPhoto(file);
-        }
-      };
-    }
-  };
+  const photo = useFileHandler("multiple", 10, 5);
 
   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    setIsLoading(true);
     if (!name || !price || stock < 0 || !category || !photo) return;
+
+    if (!photo.file || photo.file.length === 0) return;
 
     const formData = new FormData();
     formData.set("name", name);
     formData.set("price", price.toString());
     formData.set("stock", stock.toString());
-    formData.set("photo", photo);
     formData.set("category", category);
+
+    photo.file.forEach((file) => {
+      formData.append("photo", file);
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
     const res = await newProduct({ id: user?._id!, formData });
@@ -104,11 +95,24 @@ const NewProduct = () => {
 
             <div>
               <label>Photo</label>
-              <input required type="file" onChange={changeImageHandler} />
+              <input
+                required
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={photo.changeHandler}
+              />
             </div>
 
-            {photoPrev && <img src={photoPrev} alt="New Image" />}
-            <button type="submit">Create</button>
+            {photo.error && <p>{photo.error}</p>}
+
+            {photo.preview &&
+              photo.preview.map((img, i) => (
+                <img key={i} src={img} alt="New Image" />
+              ))}
+            <button disabled={isLoading} type="submit">
+              Create
+            </button>
           </form>
         </article>
       </main>

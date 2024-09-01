@@ -1,10 +1,15 @@
 import { FaPlus } from "react-icons/fa";
-import { server } from "../redux/store";
 import { CartItem } from "../types/types";
+import { transformImage } from "../utils/features";
+
+import imageNotAvailable from "../assets/image-not-available.jpg";
 
 type ProductProps = {
   productId: string;
-  photo: string;
+  photo: {
+    url: string;
+    public_id: string;
+  }[];
   name: string;
   price: number;
   stock: number;
@@ -13,21 +18,32 @@ type ProductProps = {
 
 const ProductCard = ({
   productId,
-  photo,
+  photo = [],
   name,
   price,
   stock,
   handler,
 }: ProductProps) => {
+  const imageUrl =
+    photo && photo.length > 0 && photo[0].url
+      ? transformImage(photo[0].url, 400)
+      : imageNotAvailable;
   return (
     <div className="product-card">
-      <img src={`${server}/${photo}`} alt={name} />
+      <img src={imageUrl} alt={name} />
       <p>{name}</p>
       <span>₹{price}</span>
       <div>
         <button
           onClick={() =>
-            handler({ productId, price, stock, photo, name, quantity:1})
+            handler({
+              productId,
+              price,
+              stock,
+              photo: photo.length > 0 ? photo[0].url : imageNotAvailable,
+              name,
+              quantity: 1,
+            })
           }
         >
           <FaPlus />

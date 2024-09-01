@@ -1,5 +1,6 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
+import { useFileHandler } from "6pp";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
 import { useSelector } from "react-redux";
 import { UserReducerInitialState } from "../../../types/reducer-types";
@@ -9,9 +10,8 @@ import {
   useUpdateProductMutation,
 } from "../../../redux/api/productAPI";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
-import { server } from "../../../redux/store";
 import { Skeleton } from "../../../components/Loader";
-import { responseToast } from "../../../utils/features";
+import { responseToast, transformImage } from "../../../utils/features";
 
 const Productmanagement = () => {
   const { user } = useSelector(
@@ -21,62 +21,58 @@ const Productmanagement = () => {
   const params = useParams();
   const navigate = useNavigate();
 
-  const { data, isLoading,isError } = useProductDetailsQuery(params.id!);
+  const { data, isLoading, isError } = useProductDetailsQuery(params.id!);
 
   const { price, photo, name, stock, category } = data?.products || {
-    photo: "",
+    photo: [],
     category: "",
     name: "",
     stock: 0,
     price: 0,
   };
 
+  const [btnLoading, setBtnLoading] = useState<boolean>(false);
   const [priceUpdate, setPriceUpdate] = useState<number>(price);
   const [stockUpdate, setStockUpdate] = useState<number>(stock);
   const [nameUpdate, setNameUpdate] = useState<string>(name);
   const [categoryUpdate, setCategoryUpdate] = useState<string>(category);
-  const [photoUpdate, setPhotoUpdate] = useState<string>("");
-  const [photoFile, setPhotoFile] = useState<File>();
 
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
 
-  const changeImageHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const file: File | undefined = e.target.files?.[0];
-
-    const reader: FileReader = new FileReader();
-
-    if (file) {
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          setPhotoUpdate(reader.result);
-          setPhotoFile(file);
-        }
-      };
-    }
-  };
+  const photosFiles = useFileHandler("multiple", 10, 5);
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setBtnLoading(true);
 
-    const formData = new FormData();
-    if (nameUpdate) formData.set("name", nameUpdate);
-    if (priceUpdate) formData.set("price", priceUpdate.toString());
-    if (stockUpdate !== undefined)
-      formData.set("stock", stockUpdate.toString());
-    if (photoFile) formData.set("photo", photoFile);
-    if (categoryUpdate) formData.set("category", categoryUpdate);
+    try {
+      const formData = new FormData();
+      if (nameUpdate) formData.set("name", nameUpdate);
+      if (priceUpdate) formData.set("price", priceUpdate.toString());
+      if (stockUpdate !== undefined)
+        formData.set("stock", stockUpdate.toString());
+      if (photosFiles.file && photosFiles.file.length > 0) {
+        photosFiles.file.forEach((file) => {
+          formData.append("photo", file);
+        });
+      }
+      if (categoryUpdate) formData.set("category", categoryUpdate);
 
-    const res = await updateProduct({
-      formData,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-      userId: user?._id!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-      productId: data?.products._id!,
-    });
+      const res = await updateProduct({
+        formData,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+        userId: user?._id!,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+        productId: data?.products._id!,
+      });
 
-    responseToast(res, navigate, "/admin/product");
+      responseToast(res, navigate, "/admin/product");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setBtnLoading(false);
+    }
   };
 
   const deleteHandler = async () => {
@@ -111,7 +107,7 @@ const Productmanagement = () => {
           <>
             <section>
               <strong>ID - {data?.products._id}</strong>
-              <img src={`${server}/${photo}`} alt="Product" />
+              <img src={transformImage(photo?.[0]?.url)} alt="Product" />
               <p>{name}</p>
               {stock > 0 ? (
                 <span className="green">{stock} Available</span>
@@ -166,11 +162,33 @@ const Productmanagement = () => {
 
                 <div>
                   <label>Photo</label>
-                  <input type="file" onChange={changeImageHandler} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={photosFiles.changeHandler}
+                  />
                 </div>
 
-                {photoUpdate && <img src={photoUpdate} alt="New Image" />}
-                <button type="submit">Update</button>
+                {photosFiles.error && <p>{photosFiles.error}</p>}
+
+                {photosFiles.preview && (
+                  <div
+                    style={{ display: "flex", gap: "1rem", overflowX: "auto" }}
+                  >
+                    {photosFiles.preview.map((img, i) => (
+                      <img
+                        style={{ width: 100, height: 100, objectFit: "cover" }}
+                        key={i}
+                        src={img}
+                        alt="New Image"
+                      />
+                    ))}
+                  </div>
+                )}
+                <button disabled={btnLoading} type="submit">
+                  Update
+                </button>
               </form>
             </article>
           </>

@@ -1,7 +1,7 @@
 import { FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { server } from "../redux/store";
 import { CartItem } from "../types/types";
+import { transformImage } from "../utils/features";
 
 type CartItemsProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,7 +19,7 @@ const CartItems = ({
   const { photo, productId, name, price, quantity } = cartItem;
   return (
     <div className="cart-item">
-      <img src={`${server}/${photo}`} alt={name} />
+      <img src={transformImage(photo)} alt={name} />
       <article>
         <Link to={`/product/${productId}`}>{name}</Link>
         <span>₹{price}</span>
